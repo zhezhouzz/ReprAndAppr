@@ -1,9 +1,5 @@
 module type Reprlist = sig
 
-  type oneargfun
-
-  type twoargfun
-
   type sfunction
 
   type vfunction
@@ -16,9 +12,9 @@ module type Reprlist = sig
 
   val rmatch : reprlist -> (int * reprlist) option
 
-  val rfold_left : twoargfun -> int -> reprlist -> int
+  val rfold_left : (int -> int -> int) -> int -> reprlist -> int
 
-  val rmap : oneargfun -> reprlist -> reprlist
+  val rmap : (int -> int) -> reprlist -> reprlist
 
   val length : reprlist -> int
 
@@ -28,17 +24,13 @@ module type Reprlist = sig
 end
 
 module ReprlistInt = struct
-  type sfunction = (int -> int) * (int -> int option)
+  type sfunction = (int -> int) * (int -> bool)
 
   type vfunction = int -> int
 
   type header = int
 
   type reprlist = sfunction * vfunction * header
-
-  type twoargfun = int -> int -> int
-
-  type oneargfun = int -> int
 
   let composite g f idx = g (f idx)
 
@@ -52,16 +44,14 @@ module ReprlistInt = struct
   let create_of_list (l: int list) =
      let sfun1 idx = idx + 1 in
      let len = List.length l in
-     let sfun2 idx = if idx >= len then None else Some idx in
+     let sfun2 idx = idx < len in
      let vfun = vfunction_gen l 0 in
      ((sfun1, sfun2), vfun, 0)
      
 
   let rmatch (reprl : reprlist) : (int * reprlist) option =
     match reprl with (sfun1, sfun2), vfun, idx -> (
-      match sfun2 idx with
-      | None -> None
-      | Some idx'' -> Some (vfun idx, ((sfun1, sfun2), vfun, (sfun1 idx))) )
+      if sfun2 idx then Some (vfun idx, ((sfun1, sfun2), vfun, (sfun1 idx))) else None )
 
   let rec rfold_left f start reprl =
     match rmatch reprl with
@@ -75,10 +65,7 @@ module ReprlistInt = struct
 
   let rec length_rec sfun idx len =
     match sfun with sfun1, sfun2 -> (
-      let idx' = sfun1 idx in
-      match sfun2 idx' with
-      | None -> len
-      | Some idx'' -> length_rec sfun idx'' (len + 1) )
+      if sfun2 idx then length_rec sfun (sfun1 idx) (len + 1) else len )
 
   let length reprl =
     match reprl with sfun, vfun, idx -> length_rec sfun idx 0
@@ -86,10 +73,10 @@ module ReprlistInt = struct
   let reverse reprl =
     let len = length reprl in
     match reprl with (sfun1, sfun2), vfun, idx ->
-      ( ( (fun i -> len - sfun1 (len - i))
-        , fun i -> if i <= 0 then None else Some i )
+      ( ( (fun i -> (len - 1) - sfun1 (len - 1 - i))
+        , fun i -> sfun2 (len - 1 - i) )
       , vfun
-      , len )
+      , len - 1 )
 
   let rec nth reprl n =
     match rmatch reprl with

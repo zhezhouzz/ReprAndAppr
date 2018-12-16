@@ -21,4 +21,6 @@ let _ = print_list rl in
 let rl_plus_1 = plus_1 rl in
 let _ = print_list rl_plus_1 in
 let _ = Printf.printf "%d\n" (sum rl) in
+let rl_rev = ReprlistInt.reverse rl in
+let _ = print_list rl_rev in
 ();;
