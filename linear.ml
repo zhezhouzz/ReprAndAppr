@@ -8,13 +8,23 @@ module Linear = struct
   let apply linear input = linear.a0 + (linear.a1 * input)
 
   let composite linear1 linear0 =
-    (linear1.a0 + (linear1.a1 * linear0.a0), linear0.a1 * linear1.a1)
+    {a0= linear1.a0 + (linear1.a1 * linear0.a0); a1= linear0.a1 * linear1.a1}
+
+  let reverse linear = {a0= -1 * linear.a0 / linear.a1; a1= 1 / linear.a1}
+end
+
+module Range = struct
+  type range = int * int
+
+  let in_range range idx =
+    match range with l, r -> if l < idx && idx <= r then true else false
+
+  let length range = match range with l, r -> r - l
 end
 
 module Piecewise = struct
   include Linear
-
-  type range = int * int
+  include Range
 
   type piece = {range: range; linear: linear}
 
@@ -77,9 +87,6 @@ module Piecewise = struct
 
   exception BADERROR
 
-  let in_range range idx =
-    match range with l, r -> if l < idx && idx <= r then true else false
-
   let rec apply_aux plist input =
     match plist with
     | [] -> raise BADERROR
@@ -91,4 +98,15 @@ module Piecewise = struct
     if input <= pw.left.bound then Linear.apply pw.left.linear input
     else if input > pw.right.bound then Linear.apply pw.right.linear input
     else apply_aux pw.piecelist input
+
+  let composite_linear f pw =
+    let left = {pw.left with linear= Linear.composite f pw.left.linear} in
+    let right = {pw.right with linear= Linear.composite f pw.right.linear} in
+    let plist' =
+      List.map
+        (fun (piece : piece) ->
+          {piece with linear= Linear.composite f piece.linear} )
+        pw.piecelist
+    in
+    {piecelist= plist'; left; right}
 end
