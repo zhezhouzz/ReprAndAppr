@@ -11,7 +11,7 @@ module type Reprlist = sig
 
   val rmatch : reprlist -> (int * reprlist) option
 
-  val rmatch2 : reprlist -> (int * (int * reprlist) option)
+  val rmatch2 : reprlist -> int * (int * reprlist) option
 
   val rfold_left : (int -> int -> int) -> int -> reprlist -> int
 
@@ -53,7 +53,7 @@ module ReprlistInt = struct
       Some (reprl.v reprl.h, {reprl with h= reprl.s.s1 reprl.h})
     else None
 
-   let rmatch2 (reprl : reprlist) : int * (int * reprlist) option =
+  let rmatch2 (reprl : reprlist) : int * (int * reprlist) option =
     if reprl.s.s2 reprl.h then
       (reprl.h, Some (reprl.v reprl.h, {reprl with h= reprl.s.s1 reprl.h}))
     else (reprl.h, None)

@@ -37,4 +37,12 @@ module ReprlistIntAppr = struct
     let len = length reprl in
     let h' = len - 1 in
     {reprl with h= h'; s= {reprl.s with s1= s1'}}
+
+  let rec print_list_aux rl =
+    let tmp = rmatch rl in
+    match tmp with
+    | None -> ""
+    | Some (v, rl') -> string_of_int v ^ ", " ^ print_list_aux rl'
+
+  let print_list rl = Printf.printf "[%s]\n" (print_list_aux rl)
 end

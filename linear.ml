@@ -11,10 +11,19 @@ module Linear = struct
     {a0= linear1.a0 + (linear1.a1 * linear0.a0); a1= linear0.a1 * linear1.a1}
 
   let reverse linear = {a0= -1 * linear.a0 / linear.a1; a1= 1 / linear.a1}
+
+  exception BAD_LINE
+
+  let line p0 p1 =
+    match (p0, p1) with (x0, y0), (x1, y1) ->
+      if x0 = x1 then raise BAD_LINE
+      else (((x1 * y0) - (x0 * y1)) / (x1 - x0), (y1 - y0) / (x1 - x0))
 end
 
 module Range = struct
   type range = int * int
+
+  let build l r = (l, r)
 
   let in_range range idx =
     match range with l, r -> if l < idx && idx <= r then true else false
