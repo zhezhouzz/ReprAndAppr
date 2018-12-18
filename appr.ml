@@ -37,29 +37,29 @@ module Appr = struct
 
   exception BAD_ERROR
 
-  let rec regression_aux samples =
+  let rec regression_aux (samples : samples) =
     match samples with
     | [] -> raise BAD_ERROR
     | (idx0, v0) :: samples' -> (
       match samples' with
-      | [] -> ([], idx0, (v0, 0))
+      | [] -> ([], idx0, (float_of_int v0, 0.0))
       | (idx1, v1) :: samples'' ->
           let a0, a1 = Linear.line (idx0, v0) (idx1, v1) in
           let l, rbound, rlinear = regression_aux samples' in
           ((idx0, a0, a1) :: l, rbound, rlinear) )
 
-  let regression samples rl =
+  let regression (samples : samples) rl =
     let len = ReprlistInt.length rl in
-    let s1 = Linear.build 1 1 in
+    let s1 = Linear.build 1.0 1.0 in
     let h = 0 in
     match samples with
     | [] ->
         let s2 = (0, 0) in
-        let v = Piecewise.build (0, 0) [] 0 (0, 0) in
+        let v = Piecewise.build (0.0, 0.0) [] 0 (0.0, 0.0) in
         ReprlistIntAppr.build s1 s2 v h
     | (idx0, v0) :: samples' ->
         let l, rbound, rlinear = regression_aux samples in
-        let v = Piecewise.build (v0, 0) l rbound rlinear in
-        let s2 = (-1, len - 1) in
+        let v = Piecewise.build (float_of_int v0, 0.0) l rbound rlinear in
+        let s2 = (-1, len) in
         ReprlistIntAppr.build s1 s2 v h
 end

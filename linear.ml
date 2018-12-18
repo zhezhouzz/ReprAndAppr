@@ -1,23 +1,29 @@
 module Linear = struct
-  type linear = {a0: int; a1: int}
+  type linear = {a0: float; a1: float}
 
   let build a0 a1 = {a0; a1}
 
-  let print linear = Printf.printf "{a0 = %i; a1 = %i}\n" linear.a0 linear.a1
+  let print linear = Printf.printf "{a0 = %f; a1 = %f}\n" linear.a0 linear.a1
 
-  let apply linear input = linear.a0 + (linear.a1 * input)
+  let apply linear input =
+    int_of_float (linear.a0 +. (linear.a1 *. float_of_int input))
 
   let composite linear1 linear0 =
-    {a0= linear1.a0 + (linear1.a1 * linear0.a0); a1= linear0.a1 * linear1.a1}
+    {a0= linear1.a0 +. (linear1.a1 *. linear0.a0); a1= linear0.a1 *. linear1.a1}
 
-  let reverse linear = {a0= -1 * linear.a0 / linear.a1; a1= 1 / linear.a1}
+  let reverse linear =
+    {a0= -1.0 *. linear.a0 /. linear.a1; a1= 1.0 /. linear.a1}
 
   exception BAD_LINE
 
   let line p0 p1 =
-    match (p0, p1) with (x0, y0), (x1, y1) ->
+    match (p0, p1) with (ix0, iy0), (ix1, iy1) ->
+      let x0 = float_of_int ix0 in
+      let x1 = float_of_int ix1 in
+      let y0 = float_of_int iy0 in
+      let y1 = float_of_int iy1 in
       if x0 = x1 then raise BAD_LINE
-      else (((x1 * y0) - (x0 * y1)) / (x1 - x0), (y1 - y0) / (x1 - x0))
+      else (((x1 *. y0) -. (x0 *. y1)) /. (x1 -. x0), (y1 -. y0) /. (x1 -. x0))
 end
 
 module Range = struct
@@ -72,7 +78,7 @@ module Piecewise = struct
 
   let print_piece p =
     match p.range with left, right ->
-      Printf.printf "In (%i, %i], y = %i + %i*x;\n" left right p.linear.a0
+      Printf.printf "In (%i, %i], y = %f + %f*x;\n" left right p.linear.a0
         p.linear.a1
 
   let rec print_plist plist =
@@ -84,12 +90,12 @@ module Piecewise = struct
 
   let print pw =
     let _ =
-      Printf.printf "In (-inf, %i], y = %i + %i*x;\n" pw.left.bound
+      Printf.printf "In (-inf, %i], y = %f + %f*x;\n" pw.left.bound
         pw.left.linear.a0 pw.left.linear.a1
     in
     let _ = print_plist pw.piecelist in
     let _ =
-      Printf.printf "In (%i, inf), y = %i + %i*x;\n" pw.right.bound
+      Printf.printf "In (%i, inf), y = %f + %f*x;\n" pw.right.bound
         pw.right.linear.a0 pw.right.linear.a1
     in
     ()
