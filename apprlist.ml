@@ -45,4 +45,7 @@ module ReprlistIntAppr = struct
     | Some (v, rl') -> string_of_int v ^ ", " ^ print_list_aux rl'
 
   let print_list rl = Printf.printf "[%s]\n" (print_list_aux rl)
+
+  let print rl =
+  Piecewise.print rl.v
 end
