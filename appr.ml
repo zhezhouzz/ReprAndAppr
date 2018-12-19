@@ -60,6 +60,6 @@ module Appr = struct
     | (idx0, v0) :: samples' ->
         let l, rbound, rlinear = regression_aux samples in
         let v = Piecewise.build (float_of_int v0, 0.0) l rbound rlinear in
-        let s2 = (-1, len) in
+        let s2 = (-1, len - 1) in
         ReprlistIntAppr.build s1 s2 v h
 end
