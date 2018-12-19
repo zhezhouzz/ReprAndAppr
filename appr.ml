@@ -62,4 +62,39 @@ module Appr = struct
         let v = Piecewise.build (float_of_int v0, 0.0) l rbound rlinear in
         let s2 = (-1, len - 1) in
         ReprlistIntAppr.build s1 s2 v h
+
+  let check (l : int list) sample_f
+      (test_f : ReprlistInt.reprlist -> ReprlistIntAppr.reprlist -> bool) =
+    let rl = ReprlistInt.create_of_list l in
+    let samples = sample (sample_f rl) in
+    let arl = regression samples rl in
+    test_f rl arl
+
+  let rec quickcheck_aux (ls : int list list) f =
+    match ls with
+    | [] -> (0, 0)
+    | l :: ls' ->
+        let len, passed = quickcheck_aux ls' f in
+        if f l then (len + 1, passed + 1) else (len + 1, passed)
+
+  let quickcheck (ls : int list list)
+      (sample_f :
+           ReprlistInt.reprlist
+        -> (   ReprlistInt.reprlist
+            -> ((int * ReprlistInt.reprlist) option -> int option)
+            -> (int * ReprlistInt.reprlist) option)
+        -> unit)
+      (test_f : ReprlistInt.reprlist -> ReprlistIntAppr.reprlist -> bool) =
+    let f l = check l sample_f test_f in
+    let len, passed = quickcheck_aux ls f in
+    float_of_int passed /. float_of_int len
+
+  let random_init i = Random.init i
+
+  let rec random_list len bound =
+    if len = 0 then [] else Random.int bound :: random_list (len - 1) bound
+
+  let rec random_lists len num bound =
+    if num = 0 then []
+    else random_list len bound :: random_lists len (num - 1) bound
 end

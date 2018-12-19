@@ -58,7 +58,7 @@ let samples_nonzero = Appr.sample (sample_nonzero rl) in
 let _ = Printf.printf "Nonzero Samples:\n" in
 let _ = Appr.print_samples samples_nonzero in
 let arl_nonzero = Appr.regression samples_nonzero rl in
-let _ = Printf.printf "Apprlist with Nonzero Samples:\n" in
+let _ = Printf.printf "Nonzero Samples:\n" in
 let _ = ReprlistIntAppr.print arl_nonzero in
 let _ = ReprlistIntAppr.print_list arl_nonzero in
 let diff1_full = diff1 rl arl in
@@ -69,4 +69,28 @@ let _ = Printf.printf "diff of full sample: %i\n" diff1_full in
 let _ = Printf.printf "diff of nonzero sample: %i\n" diff1_nonzero in
 let _ = Printf.printf "nonzero diff of full sample: %i\n" diff_n_full in
 let _ = Printf.printf "nonzero diff of nonzero sample: %i\n" diff_n_nonzero in
+let _ = Appr.random_init 10 in
+let ls = Appr.random_lists 10 10 3 in
+let rate =
+  Appr.quickcheck ls sample_nonzero (fun rl arl ->
+      let d = diff1 rl arl in
+      d < 5 )
+in
+let _ =
+  Printf.printf
+    "QuickCheck: 10 random(0, 3) list with length 10, Nonezero sample, Test: sum of diff \
+     between every element is less than 5, rate = %f\n"
+    rate
+in
+let rate2 =
+  Appr.quickcheck ls sample_f (fun rl arl ->
+      let d = diff1 rl arl in
+      d < 5 )
+in
+let _ =
+  Printf.printf
+    "QuickCheck: 10 random(0, 3) list with length 10, Full sample, Test: sum of diff \
+     between every element is less than 5, rate = %f\n"
+    rate2
+in
 ()
